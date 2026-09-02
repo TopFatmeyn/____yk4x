@@ -1,5 +1,10 @@
-# ____yk4x Browser V2
+# ____yk4x Browser V6
+Phone-ready futuristic web browser shell.
 
-Tabs, History, Bookmarks, Private mode, search-engine selector, custom homepage, Notes, PWA install and offline shell.
+V6 adds:
+- Privacy Dashboard
+- Upgraded Private Mode
+- Clear Browsing Data
+- Existing Tabs, Bookmarks, History and Downloads managers
 
-Upload all files to the repository root. GitHub Pages will publish the app. This is a web/PWA browser shell, not a Chrome browser engine; external sites open in the phone browser for security reasons.
+Upload all files to the GitHub Pages repository and wait for the Pages Action to finish.
