@@ -1,13 +1,5 @@
-# ____yk4x Browser — Phone Ready
+# ____yk4x Browser V2
 
-This is a mobile-first PWA/web app. Upload all files to the root of your GitHub Pages repository.
+Tabs, History, Bookmarks, Private mode, search-engine selector, custom homepage, Notes, PWA install and offline shell.
 
-Files:
-- index.html
-- style.css
-- script.js
-- manifest.json
-
-Open the GitHub Pages URL in Chrome on Android. Use Chrome menu -> Add to Home screen / Install app.
-
-Note: this is a web-app browser interface. A normal website cannot become a full Chrome-like browser engine or bypass other websites' security restrictions.
+Upload all files to the repository root. GitHub Pages will publish the app. This is a web/PWA browser shell, not a Chrome browser engine; external sites open in the phone browser for security reasons.
