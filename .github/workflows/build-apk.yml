@@ -4,7 +4,10 @@ on:
   workflow_dispatch:
   push:
     paths:
-      - "yk4x_android/**"
+      - "index.html"
+      - "style.css"
+      - "script.js"
+      - "icon.svg"
       - ".github/workflows/build-apk.yml"
 
 permissions:
@@ -27,13 +30,143 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
-          gradle-version: "8.7"
+          gradle-version: "8.13"
+
+      - name: Create Android project
+        shell: bash
+        run: |
+          mkdir -p androidapp/app/src/main/java/com/yk4x/browser
+          mkdir -p androidapp/app/src/main/assets
+          mkdir -p androidapp/app/src/main/res/values
+
+          cp index.html androidapp/app/src/main/assets/
+          cp style.css androidapp/app/src/main/assets/
+          cp script.js androidapp/app/src/main/assets/
+          cp icon.svg androidapp/app/src/main/assets/
+
+          cat > androidapp/settings.gradle <<'EOF'
+          pluginManagement {
+              repositories {
+                  google()
+                  mavenCentral()
+                  gradlePluginPortal()
+              }
+          }
+
+          dependencyResolutionManagement {
+              repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+              repositories {
+                  google()
+                  mavenCentral()
+              }
+          }
+
+          rootProject.name = "yk4x"
+          include(":app")
+          EOF
+
+          cat > androidapp/build.gradle <<'EOF'
+          plugins {
+              id 'com.android.application' version '8.13.0' apply false
+          }
+          EOF
+
+          cat > androidapp/app/build.gradle <<'EOF'
+          plugins {
+              id 'com.android.application'
+          }
+
+          android {
+              namespace 'com.yk4x.browser'
+              compileSdk 35
+
+              defaultConfig {
+                  applicationId 'com.yk4x.browser'
+                  minSdk 23
+                  targetSdk 35
+                  versionCode 1
+                  versionName '1.0'
+              }
+          }
+          EOF
+
+          cat > androidapp/app/src/main/AndroidManifest.xml <<'EOF'
+          <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+              <uses-permission android:name="android.permission.INTERNET" />
+
+              <application
+                  android:theme="@style/AppTheme"
+                  android:label="____yk4x"
+                  android:usesCleartextTraffic="true">
+
+                  <activity
+                      android:name=".MainActivity"
+                      android:exported="true">
+
+                      <intent-filter>
+                          <action android:name="android.intent.action.MAIN" />
+                          <category android:name="android.intent.category.LAUNCHER" />
+                      </intent-filter>
+
+                  </activity>
+              </application>
+          </manifest>
+          EOF
+
+          cat > androidapp/app/src/main/res/values/styles.xml <<'EOF'
+          <resources>
+              <style name="AppTheme" parent="android:style/Theme.Material.NoActionBar">
+                  <item name="android:fontFamily">sans</item>
+                  <item name="android:windowFullscreen">true</item>
+              </style>
+          </resources>
+          EOF
+
+          cat > androidapp/app/src/main/java/com/yk4x/browser/MainActivity.java <<'EOF'
+          package com.yk4x.browser;
+
+          import android.app.Activity;
+          import android.os.Bundle;
+          import android.webkit.WebSettings;
+          import android.webkit.WebView;
+          import android.webkit.WebViewClient;
+
+          public class MainActivity extends Activity {
+              private WebView webView;
+
+              @Override
+              protected void onCreate(Bundle savedInstanceState) {
+                  super.onCreate(savedInstanceState);
+
+                  webView = new WebView(this);
+                  setContentView(webView);
+
+                  WebSettings settings = webView.getSettings();
+                  settings.setJavaScriptEnabled(true);
+                  settings.setDomStorageEnabled(true);
+                  settings.setAllowFileAccess(true);
+                  settings.setAllowContentAccess(true);
+
+                  webView.setWebViewClient(new WebViewClient());
+                  webView.loadUrl("file:///android_asset/index.html");
+              }
+
+              @Override
+              public void onBackPressed() {
+                  if (webView.canGoBack()) {
+                      webView.goBack();
+                  } else {
+                      super.onBackPressed();
+                  }
+              }
+          }
+          EOF
 
       - name: Build APK
-        run: gradle -p yk4x_android assembleDebug
+        run: gradle -p androidapp assembleDebug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: yk4x-debug-apk
-          path: yk4x_android/app/build/outputs/apk/debug/app-debug.apk
+          path: androidapp/app/build/outputs/apk/debug/app-debug.apk
